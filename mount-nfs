@@ -1,0 +1,28 @@
+#!/bin/bash
+
+result=$(ifconfig | grep 192.168.88)
+if [[ -z $result ]]
+then
+	su kushal -c 'notify-send -i /home/kushal/network_scripts/info.png "Not mounting master, not on MarNet"'
+else
+	su kushal -c 'notify-send -i /home/kushal/network_scripts/mount.png "Mounting  master:/share"'
+	mount master:/share /share
+
+	if [[ -z $(ls /share) ]]
+	then
+		su kushal -c 'notify-send -i /home/kushal/network_scripts/fail.png "Failed to mount master:/share"'
+	fi
+
+	su kushal -c 'notify-send -i /home/kushal/network_scripts/mount.png "Mounting /work on nodes"'
+	mount node1:/work /nodes/1
+	mount node2:/work /nodes/2
+	mount node3:/work /nodes/3
+
+	for n in 1 2 3
+	do
+		if [[ -z $(ls /nodes/$n) ]]
+		then
+			su kushal -c 'notify-send -i /home/kushal/network_scripts/fail.png "Failed to mount /work from node$n"'
+		fi
+	done
+fi
